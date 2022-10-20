@@ -18,23 +18,27 @@ export class ManageProductsService extends ApiService {
     }
 
     return this.getPreSignedUrl(file.name).pipe(
-      switchMap((url) =>
-        this.http.put(url, file, {
+      switchMap((signedUrl) =>
+        this.http.put(signedUrl.url, file, {
           headers: {
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            'Content-Type': 'text/csv',
+            'Content-Type': 'text/csv'
           },
         })
       )
     );
   }
 
-  private getPreSignedUrl(fileName: string): Observable<string> {
+  private getPreSignedUrl(fileName: string): Observable<{ url: string }> {
     const url = this.getUrl('import', 'import');
+    const authorization_token = localStorage.getItem('authorization_token')
 
-    return this.http.get<string>(url, {
+    return this.http.get<{ url: string }>(url, {
       params: {
         name: fileName,
+      },
+      headers: {
+        'Authorization': `Basic ${authorization_token}`
       },
     });
   }
